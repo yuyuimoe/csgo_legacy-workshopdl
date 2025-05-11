@@ -30,7 +30,9 @@ internal class SteamOutputInterpreter : IDisposable
         if (Constants.RegexDownloadPath.IsMatch(output))
         {
             var swh = new SteamWorkshopHandler();
-            swh.ExtractWorkshopMap(Constants.RegexDownloadPath.Match(output).Value);
+            string downloadPath = Constants.RegexDownloadPath.Match(output).Value;
+            swh.ExtractWorkshopBinary(downloadPath);
+            swh.DeleteFile(downloadPath);
         }
 
         await _sw.WriteLineAsync(output);

@@ -5,6 +5,7 @@ namespace SupremacyWorkshopDownloader;
 internal static class Constants
 {
     internal const string BinaryDirName = "bin";
+    internal static string SupremacyDir = "";
     internal static readonly string CurrentDir = Directory.GetCurrentDirectory();
     internal static readonly string BinaryDirPath = Path.Combine(CurrentDir, BinaryDirName);
     internal static readonly string SteamCmdPath = Path.Combine(CurrentDir, "workshop.*.bin");
