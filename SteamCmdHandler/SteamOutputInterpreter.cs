@@ -8,16 +8,11 @@ namespace SupremacyWorkshopDownloader.SteamHandler;
 
 internal class SteamOutputInterpreter : IDisposable
 {
-    private readonly ILogger _logger;
     private readonly StreamWriter _sw;
 
     internal SteamOutputInterpreter()
     {
         _sw = new StreamWriter(Path.Combine(Constants.CurrentDir, "steamoutput.log"));
-        _logger = LoggerFactory.Create(builder => 
-            builder.AddConsole()
-            .SetMinimumLevel(LogLevel.Debug))
-            .CreateLogger("SteamOutputInterpreter");
     }
     
     internal async Task HandleOutput(string output)
@@ -29,6 +24,7 @@ internal class SteamOutputInterpreter : IDisposable
         
         if (Constants.RegexDownloadPath.IsMatch(output))
         {
+            Console.WriteLine("Workshop download finished");
             var swh = new SteamWorkshopHandler();
             string downloadPath = Constants.RegexDownloadPath.Match(output).Value;
             swh.ExtractWorkshopBinary(downloadPath);
@@ -36,8 +32,7 @@ internal class SteamOutputInterpreter : IDisposable
         }
 
         await _sw.WriteLineAsync(output);
-        //_logger.LogInformation("{output}", output);
-        Console.WriteLine(output);
+        Program.Logger.LogDebug("{output}", output);
     }
 
     private void Error(string message)

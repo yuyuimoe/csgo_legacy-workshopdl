@@ -7,12 +7,10 @@ namespace SupremacyWorkshopDownloader.SteamHandler;
 
 internal class SteamDownloader
 {
-    private ILogger _logger;
     private HttpClient _client;
     internal SteamDownloader(HttpClient client)
     {
         _client = client;
-        _logger = LoggerFactory.Create(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Debug)).CreateLogger("SteamDownloader");
     }
     
     internal async Task<bool> Download()
@@ -20,7 +18,7 @@ internal class SteamDownloader
         if (IsSteamCmdExist())
             return true;
         
-        _logger.LogInformation("Downloading steam...");
+        Console.WriteLine("Downloading SteamCMD...");
         
         if (!Directory.Exists(Constants.BinaryDirPath))
             Directory.CreateDirectory(Constants.BinaryDirPath);
@@ -32,7 +30,7 @@ internal class SteamDownloader
 
     private async Task ExtractDownload(Stream stream)
     {
-        _logger.LogInformation("Extracting...");
+        Console.WriteLine("Extracting SteamCMD...");
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             using ZipArchive zip = new ZipArchive(stream, ZipArchiveMode.Read);

@@ -10,7 +10,6 @@ internal class SteamRunner : IAsyncDisposable
     private readonly SteamOutputInterpreter _steamOutputInterpreter;
     private Process? _steamProcess;
     private readonly CancellationTokenSource _cts;
-    private ILogger _logger;
 
     internal SteamRunner(SteamDownloader steamDownloader, ProcessStartInfo startInfo, SteamOutputInterpreter steamOutputInterpreter, CancellationTokenSource cts)
     {
@@ -18,30 +17,30 @@ internal class SteamRunner : IAsyncDisposable
         _steamDownloader = steamDownloader;
         _steamOutputInterpreter = steamOutputInterpreter;
         _cts = cts;
-        _logger = LoggerFactory.Create(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Debug)).CreateLogger("SteamRunner");
     }
 
     private async Task RunSteam(string args)
     {
-        _logger.LogInformation("Starting Steam.");
         try
         {
             _steamProcess = new Process { StartInfo = _startInfo, EnableRaisingEvents = true };
-            
+
             _steamProcess.StartInfo.Arguments = args;
-            _steamProcess.OutputDataReceived += async (sender, arguments) => await _steamOutputInterpreter.HandleOutput(arguments.Data ?? string.Empty);
+            _steamProcess.OutputDataReceived += async (sender, arguments) =>
+                await _steamOutputInterpreter.HandleOutput(arguments.Data ?? string.Empty);
             _steamProcess.Exited += (sender, _) => _cts.Cancel();
-            
+
             await _steamDownloader.Download(); //Ensure SteamCMD is downloaded.
+            Console.WriteLine("Starting SteamCMD...");
             
             _steamProcess.Start();
             _steamProcess.BeginOutputReadLine();
-            
+
             await _steamProcess.WaitForExitAsync(_cts.Token);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException ex)
         {
-            throw new Exception("Operation was cancelled.");
+            throw new Exception($"SteamCMD cancelled. {ex.Message}", ex);
         }
         catch (Exception ex)
         {
@@ -52,7 +51,7 @@ internal class SteamRunner : IAsyncDisposable
 
     internal async Task DownloadWorkshopMap(long workshopId)
     {
-        _logger.LogInformation("Downloading workshop map {workshopId}", workshopId);
+        Console.WriteLine("Downloading workshop map {0}", workshopId);
         string args = $"+login anonymous +workshop_download_item 730 {workshopId} +quit";
         await RunSteam(args);
     }
